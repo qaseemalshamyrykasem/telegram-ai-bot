@@ -1,0 +1,20 @@
+{
+  "name": "telegram-ai-bot",
+  "version": "1.0.0",
+  "description": "بوت تليجرام متصل بالذكاء الاصطناعي",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "dev": "node --watch src/bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "z-ai-web-dev-sdk": "latest",
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
