@@ -8,6 +8,16 @@ services:
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: ZAI_BASE_URL
+        value: https://internal-api.z.ai/v1
+      - key: ZAI_API_KEY
+        value: Z.ai
+      - key: ZAI_CHAT_ID
+        sync: false
+      - key: ZAI_TOKEN
+        sync: false
+      - key: ZAI_USER_ID
+        sync: false
       - key: BOT_MODE
         value: polling
       - key: PORT
