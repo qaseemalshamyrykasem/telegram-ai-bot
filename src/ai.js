@@ -4,6 +4,56 @@
  */
 
 import ZAI from 'z-ai-web-dev-sdk';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+
+// ==========================================
+// إنشاء ملف الإعدادات تلقائياً من متغيرات البيئة
+// ==========================================
+
+function ensureConfig() {
+  const possiblePaths = [
+    path.join(process.cwd(), '.z-ai-config'),
+    path.join(os.homedir(), '.z-ai-config'),
+    '/etc/.z-ai-config'
+  ];
+
+  // تحقق إذا كان ملف الإعدادات موجود مسبقاً
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      console.log(`✅ ملف إعدادات z-ai موجود: ${p}`);
+      return;
+    }
+  }
+
+  // أنشئ الملف من متغيرات البيئة
+  const baseUrl = process.env.ZAI_BASE_URL;
+  const apiKey = process.env.ZAI_API_KEY;
+  const chatId = process.env.ZAI_CHAT_ID;
+  const token = process.env.ZAI_TOKEN;
+  const userId = process.env.ZAI_USER_ID;
+
+  if (baseUrl && apiKey && token) {
+    const config = {
+      baseUrl,
+      apiKey,
+      chatId: chatId || '',
+      token,
+      userId: userId || ''
+    };
+
+    const configPath = path.join(process.cwd(), '.z-ai-config');
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log(`✅ تم إنشاء ملف إعدادات z-ai: ${configPath}`);
+  } else {
+    console.warn('⚠️ متغيرات بيئة z-ai غير مكتملة. البوت سيعمل لكن الذكاء الاصطناعي لن يتصل.');
+    console.warn('⚠️ تأكد من تعيين: ZAI_BASE_URL, ZAI_API_KEY, ZAI_TOKEN');
+  }
+}
+
+// إنشاء الإعدادات قبل تهيئة SDK
+ensureConfig();
 
 // إنشاء نسخة واحدة من الـ SDK (Singleton)
 let zaiInstance = null;
@@ -51,12 +101,14 @@ export async function getAIResponse(userMessage, userName = '') {
   } catch (error) {
     console.error('❌ خطأ في الاتصال بالذكاء الاصطناعي:', error.message);
 
-    // رسائل خطأ مخصصة
     if (error.message?.includes('rate limit') || error.message?.includes('429')) {
       return '⏳ تم تجاوز حد الطلبات. انتظر قليلاً وحاول مرة أخرى.';
     }
     if (error.message?.includes('timeout')) {
       return '⏱️ انتهت مهلة الاتصال. حاول مرة أخرى.';
+    }
+    if (error.message?.includes('Configuration file not found')) {
+      return '⚠️ إعدادات الذكاء الاصطناعي غير مكتملة. تواصل مع مطور البوت.';
     }
 
     return '⚠️ حدث خطأ تقني. حاول مرة أخرى لاحقاً.';
